@@ -7,35 +7,17 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 using System.IO;
 
 /// <summary>
-/// ƒuƒƒbƒN‚ÌƒAƒCƒeƒ€”roD
-/// ƒuƒƒbƒN‚©‚çƒNƒŠƒ{[‚ğo‚µ‚½‚è‚È‚Ç‚Í‚Å‚«‚È‚¢İŒv‚É‚µ‚½iƒ}ƒŠƒIƒ[ƒJ[‚Ìd—l‚Å‚Í‚È‚¢‚Æ‚¢‚¤‚±‚Æ‚Åj
+/// ï¿½uï¿½ï¿½ï¿½bï¿½Nï¿½ÌƒAï¿½Cï¿½eï¿½ï¿½ï¿½rï¿½oï¿½D
+/// ï¿½uï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½{ï¿½[ï¿½ï¿½ï¿½oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚Ç‚Í‚Å‚ï¿½ï¿½È‚ï¿½ï¿½İŒvï¿½É‚ï¿½ï¿½ï¿½ï¿½iï¿½}ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½[ï¿½Jï¿½[ï¿½Ìdï¿½lï¿½Å‚Í‚È‚ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚Åj
 /// </summary>
 public class BlockEmittion : MonoBehaviour
 {
     [SerializeField] BlockContent blockContent;
 
-    // EmittionBlock‚ÌƒCƒ“ƒXƒ^ƒ“ƒXŠÔ‚Å‹¤—L‚³‚ê‚éstatic‚ÈƒvƒŒƒnƒu‚ÌQÆ
-    static GameObject coinPfb;
-    static GameObject mushroomPfb;
-    static GameObject starPfb;
-    static GameObject oneUpMushroomPfb;
-    static GameObject fireflowerPfb;
-    public event UnityAction OnEmitItem = delegate { };
+    // EmittionBlockï¿½ÌƒCï¿½ï¿½ï¿½Xï¿½^ï¿½ï¿½ï¿½Xï¿½Ô‚Å‹ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½staticï¿½Èƒvï¿½ï¿½ï¿½nï¿½uï¿½ÌQï¿½ï¿½
+    public event UnityAction<BlockContent> OnEmitItem = delegate { };
 
-    private void Awake()
-    {
-        string path = "Prefabs/BlockContents";
-        coinPfb = coinPfb != null ?
-            coinPfb : Addressables.LoadAssetAsync<GameObject>($"{path}/CoinInBlock.prefab").WaitForCompletion();
-        mushroomPfb = mushroomPfb != null ?
-            mushroomPfb : Addressables.LoadAssetAsync<GameObject>($"{path}/MushroomInBlock.prefab").WaitForCompletion();
-        starPfb = starPfb != null ?
-            starPfb : Addressables.LoadAssetAsync<GameObject>($"{path}/MushroomInBlock.prefab").WaitForCompletion();
-        oneUpMushroomPfb = oneUpMushroomPfb != null ?
-            oneUpMushroomPfb : Addressables.LoadAssetAsync<GameObject>($"{path}/MushroomInBlock.prefab").WaitForCompletion();
-        fireflowerPfb = fireflowerPfb != null ?
-            fireflowerPfb : Addressables.LoadAssetAsync<GameObject>($"{path}/FireflowerInBlock.prefab").WaitForCompletion();
-    }
+    const float emittionTime = 1.0f;
 
     public void Emit(bool isLarge)
     {
@@ -44,8 +26,7 @@ public class BlockEmittion : MonoBehaviour
 
     IEnumerator EmitCoroutine(bool isLarge)
     {
-        OnEmitItem.Invoke();
-        float emitDelaySeconds = default;
+        float emitDelaySeconds = 0f;
 
         switch (blockContent)
         {
@@ -62,27 +43,51 @@ public class BlockEmittion : MonoBehaviour
 
         yield return new WaitForSeconds(emitDelaySeconds);
 
+        OnEmitItem.Invoke(blockContent);
+
         GameObject emitPfb = default;
+        var pfbHolder = Locator<PrefabHolder>.I;
+
+        var appearAnim = true;
+
         switch (blockContent)
         {
             case BlockContent.FireFlower:
-                if (isLarge) emitPfb = fireflowerPfb;
-                else emitPfb = mushroomPfb;
+                if (isLarge) emitPfb = pfbHolder.FireflowerPfb;
+                else emitPfb = pfbHolder.MushroomPfb;
                 break;
             case BlockContent.Mushroom:
-                emitPfb = mushroomPfb;
+                emitPfb = pfbHolder.MushroomPfb;
                 break;
             case BlockContent.Star:
-                emitPfb = starPfb;
+                emitPfb = pfbHolder.StarPfb;
                 break;
             case BlockContent.OneUpMushroom:
-                emitPfb = oneUpMushroomPfb;
+                emitPfb = pfbHolder.OneUpMushroomPfb;
                 break;
             case BlockContent.Coin:
-                emitPfb = coinPfb;
+                emitPfb = pfbHolder.CoinPfb;
+                appearAnim = false;
                 break;
         }
 
-        Instantiate(emitPfb, transform.position, Quaternion.identity);
+        var ins = Instantiate(emitPfb, transform.position, Quaternion.identity);
+
+        if (appearAnim) StartCoroutine(AppearCoroutine(ins));
+
+    }
+
+    IEnumerator AppearCoroutine(GameObject obj)
+    {
+        var rb = obj.GetComponent<Rigidbody2D>();
+        var colliders = obj.GetComponents<Collider2D>();
+
+        rb.simulated = false;
+        foreach (var col in colliders) col.enabled = false;
+
+        Vector3 targetPosition = transform.position + Vector3.up;
+        yield return CoroutineUtil.MoveToInTime(obj.transform, targetPosition, emittionTime);
+        foreach (var col in colliders) col.enabled = true;
+        rb.simulated = true;
     }
 }

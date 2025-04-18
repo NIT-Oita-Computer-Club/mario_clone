@@ -2,12 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Goomba : MonoBehaviour, IStampable
+public class Goomba : MonoBehaviour, IStampable, IAttackable
 {
-    // “Á‚ÉŠg’£«‚àÄ—˜—p«‚àŠ´‚¶‚È‚¢‚Ì‚ÅC‘S•”ˆê‚©Š‚É‚Ü‚Æ‚ß‚½
+    // ï¿½ï¿½ï¿½ÉŠgï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä—ï¿½ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½Ì‚ÅCï¿½Sï¿½ï¿½ï¿½ê‚©ï¿½ï¿½ï¿½É‚Ü‚Æ‚ß‚ï¿½
 
     Animator animator;
     ReboundMovement movement;
+    DieMotion dieMotion;
     Rigidbody2D rb;
     bool isAlive = true;
     const string AnimDie = "Die";
@@ -16,20 +17,39 @@ public class Goomba : MonoBehaviour, IStampable
     {
         movement = GetComponent<ReboundMovement>();
         rb = GetComponent<Rigidbody2D>();
+        dieMotion = GetComponent<DieMotion>();
         animator = GetComponent<Animator>();
     }
 
     public void Stamp()
     {
-        StartCoroutine(DieCoroutine());
+        StartCoroutine(OnStampedCoroutine());
     }
 
-    IEnumerator DieCoroutine()
+    public void Attack(int direction)
+    {
+        StartCoroutine(OnAttackedCoroutine(direction));
+    }
+
+    IEnumerator OnStampedCoroutine()
     {
         isAlive = false;
         movement.enabled = false;
         rb.simulated = false;
         animator.Play(AnimDie);
+        yield return new WaitForSeconds(1f);
+        Destroy(gameObject);
+    }
+
+
+    IEnumerator OnAttackedCoroutine(int direction)
+    {
+        isAlive = false;
+        movement.enabled = false;
+        rb.simulated = false;
+        animator.enabled = false;
+        dieMotion.Init(direction);
+        dieMotion.enabled = true;
         yield return new WaitForSeconds(1f);
         Destroy(gameObject);
     }

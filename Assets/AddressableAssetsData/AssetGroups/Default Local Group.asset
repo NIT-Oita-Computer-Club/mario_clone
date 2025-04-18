@@ -22,16 +22,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: cef519cea5468e04cbbda8b4e22d321c
-    m_Address: Prefabs/BlockContents/MushroomInBlock.prefab
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: e04d9ce9f0786fb48957b80877193d02
-    m_Address: Prefabs/BlockContents/FireflowerInBlock.prefab
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 591dd1b07504c0e49a478ed82de95113, type: 2}
   m_SchemaSet:

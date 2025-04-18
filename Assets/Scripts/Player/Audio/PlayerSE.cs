@@ -6,8 +6,7 @@ public class PlayerSE : MonoBehaviour
 {
     [SerializeField] PlayerStateManager stateManager;
     [SerializeField] DefaultPlayerMovement movement;
-    [SerializeField] HeadChecker headChecker;
-    [SerializeField] GroundChecker groundChecker;
+    [SerializeField] CollisionChecker collisionCheck;
     [SerializeField] EnemyCollision enemyCollision;
     [SerializeField] ItemPicker itemPicker;
 
@@ -31,7 +30,7 @@ public class PlayerSE : MonoBehaviour
         audioSource = Locator<SEManager>.I.AudioSource;
 
         movement.OnJump += MakeJumpSE;
-        headChecker.OnHeadCollision += MakeCollisionSE;
+        collisionCheck.OnHeadCollision += MakeCollisionSE;
         itemPicker.OnTakeItem += MakePickItemSE;
         enemyCollision.OnStamp += MakeStampSE;
         stateManager.OnInjured += OnInjured;
@@ -40,7 +39,7 @@ public class PlayerSE : MonoBehaviour
     private void OnDestroy()
     {
         movement.OnJump -= MakeJumpSE;
-        headChecker.OnHeadCollision -= MakeCollisionSE;
+        collisionCheck.OnHeadCollision -= MakeCollisionSE;
         itemPicker.OnTakeItem -= MakePickItemSE;
         enemyCollision.OnStamp -= MakeStampSE;
         stateManager.OnInjured -= OnInjured;

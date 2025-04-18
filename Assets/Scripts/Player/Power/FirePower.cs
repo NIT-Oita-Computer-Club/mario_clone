@@ -1,20 +1,21 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
-class FirePower: MonoBehaviour
+class FirePower : MonoBehaviour
 {
     [SerializeField] InputReader input;
-    static GameObject coinPfb;
+    [SerializeField] PlayerAnimator animator;
+    [SerializeField] GameObject firePfb;
 
-    private void Awake()
-    {
-        
-    }
+    [SerializeField] Vector3 offset;
 
     private void Update()
     {
-        if(input.RetrieveDashInput(thisFrame: true))
+        if (input.RetrieveDashInput(thisFrame: true))
         {
-
+            var obj = Instantiate(firePfb, transform.position +
+            new Vector3(offset.x * (animator.FaceToRight ? 1 : -1), offset.y, offset.z), Quaternion.identity);
+            obj.GetComponent<Fire>().SetDirection(animator.FaceToRight);
         }
     }
 }

@@ -5,47 +5,48 @@ using UnityEngine.Events;
 
 public class DefaultPlayerMovement : PlayerMovement
 {
-    // ƒRƒ“ƒ|[ƒlƒ“ƒg
+    // ï¿½Rï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
     Rigidbody2D rb;
     [SerializeField] InputReader input;
-    [SerializeField] GroundChecker ground;
+    [SerializeField] CollisionChecker collisionCheck;
     [SerializeField] EnemyCollision enemyCollision;
-    [SerializeField] HeadChecker headChecker;
+    [SerializeField] CollisionChecker headChecker;
 
     [SerializeField] PlayerStateManager stateManager;
 
-    // ˆÚ“®—pƒpƒ‰ƒ[ƒ^
+    // ï¿½Ú“ï¿½ï¿½pï¿½pï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^
     PlayerMovementParams currentMoveParams;
     [SerializeField] PlayerMovementParams normalMoveParams;
     [SerializeField] PlayerMovementParams starMoveParams;
 
     public event UnityAction OnJump = delegate { };
 
-    // ƒCƒ“ƒvƒbƒg
+    // ï¿½Cï¿½ï¿½ï¿½vï¿½bï¿½g
     float horizontalInput;
     bool jumpInput = false;
     bool duckInput = false;
 
-    // ó‘Ô
+    // ï¿½ï¿½ï¿½
     public bool IsJumping { get; private set; } = false;
     public float DisiredXSpeed { get; private set; }
 
-    // ”ñŒöŠJƒvƒƒpƒeƒB
+    // ï¿½ï¿½ï¿½ï¿½Jï¿½vï¿½ï¿½ï¿½pï¿½eï¿½B
     bool inputtingMovingDir => Mathf.Sign(horizontalInput) == Mathf.Sign(rb.velocity.x);
 
-    // ƒAƒjƒ[ƒVƒ‡ƒ“—p‚ÌŒöŠJƒvƒƒpƒeƒB
+    // ï¿½Aï¿½jï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½pï¿½ÌŒï¿½ï¿½Jï¿½vï¿½ï¿½ï¿½pï¿½eï¿½B
     public bool IsRunning => Mathf.Abs(rb.velocity.x) > 0.25f || (!IsDucking && horizontalInput != 0);
     public bool IsSliding => Mathf.Abs(rb.velocity.x) > currentMoveParams.MaxXSpeed && !inputtingMovingDir;
     public bool IsDucking => duckInput;
 
     public float XSpeedRatio => rb.velocity.x / (currentMoveParams.MaxXSpeed * PlayerMovementParams.DashMultiplier);
 
+    const float VELOCITY_EPSILON = 0.001f;
 
     private void OnEnable()
     {
         rb = GetComponent<Rigidbody2D>();
 
-        // ó‘Ô‚É‰‚¶‚ÄˆÚ“®ƒpƒ‰ƒ[ƒ^‚ğ•ÏX
+        // ï¿½ï¿½Ô‚É‰ï¿½ï¿½ï¿½ï¿½ÄˆÚ“ï¿½ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^ï¿½ï¿½ÏX
         SetMoveParamsByState(stateManager.CurrentPowerUpState);
         stateManager.OnStateChanged += SetMoveParamsByState;
         headChecker.OnHeadCollision += OnHeadCollision;
@@ -78,7 +79,7 @@ public class DefaultPlayerMovement : PlayerMovement
         OnJump.Invoke();
     }
 
-    // ˆÚ“®ƒpƒ‰ƒ[ƒ^‚Ìİ’è
+    // ï¿½Ú“ï¿½ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^ï¿½Ìİ’ï¿½
     private void SetMoveParamsByState(PlayerPowerUpState current)
     {
         if (current.IsStar) currentMoveParams = starMoveParams;
@@ -87,8 +88,9 @@ public class DefaultPlayerMovement : PlayerMovement
 
     void Update()
     {
-        if (input.RetrieveJumpInput(thisFrame: true) && ground.OnGround) Jump();
-        if (IsJumping && rb.velocity.y <= 0 && ground.OnGround)
+        if (input.RetrieveJumpInput(thisFrame: true) && collisionCheck.OnGround) Jump();
+
+        if (IsJumping && rb.velocity.y <= VELOCITY_EPSILON && collisionCheck.OnGround)
         {
             IsJumping = false;
         }
@@ -98,10 +100,11 @@ public class DefaultPlayerMovement : PlayerMovement
         horizontalInput = input.RetrieveHorizontalInput();
 
         if (duckInput)
-        { 
-            DisiredXSpeed = 0; 
+        {
+            DisiredXSpeed = 0;
             return;
         }
+
         DisiredXSpeed = horizontalInput * currentMoveParams.MaxXSpeed
             * (input.RetrieveDashInput() ? PlayerMovementParams.DashMultiplier : 1f);
     }
@@ -119,7 +122,7 @@ public class DefaultPlayerMovement : PlayerMovement
 
     float GetGravityScale(float ySpeed, bool jumpInputting)
     {
-        if (ySpeed < 0 || ySpeed > 0 && !jumpInputting) return currentMoveParams.FallingGravityScale;
+        if (ySpeed < VELOCITY_EPSILON || ySpeed > VELOCITY_EPSILON && !jumpInputting) return currentMoveParams.FallingGravityScale;
         else if (ySpeed > 0 && jumpInputting) return currentMoveParams.RisingGravityScale;
         else return currentMoveParams.DefaultGravityScale;
     }

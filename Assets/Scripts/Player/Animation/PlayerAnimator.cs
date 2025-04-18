@@ -26,11 +26,13 @@ public class PlayerAnimator : MonoBehaviour
         public const string WalkAnimSpeed = "WalkAnimSpeed";
     }
 
-    // ƒRƒ“ƒ|[ƒlƒ“ƒg
+    // ï¿½Rï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
     [SerializeField] PlayerStateManager stateManager;
     [SerializeField] PlayerMovementManager movementManager;
-    [SerializeField] GroundChecker ground;
+    [SerializeField] CollisionChecker collisionCheck;
     Animator animator;
+
+    public bool FaceToRight { get; private set; }
 
     string currentGrowth;
 
@@ -86,8 +88,12 @@ public class PlayerAnimator : MonoBehaviour
 
     void DefaultAnimation(DefaultPlayerMovement movement)
     {
-        if (movement.DisiredXSpeed != 0 && ground.OnGround)
-            transform.eulerAngles = new Vector3(0, movement.DisiredXSpeed > 0 ? 0 : 180, 0);
+        if (movement.DisiredXSpeed != 0 && collisionCheck.OnGround)
+        {
+            FaceToRight = movement.DisiredXSpeed > 0;
+            transform.eulerAngles = new Vector3(0, FaceToRight ? 0 : 180, 0);
+        }
+
         if (movement.IsJumping)
         {
             animator.Play(AnimationNames.Jump + currentGrowth);

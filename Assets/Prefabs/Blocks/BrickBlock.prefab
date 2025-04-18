@@ -93,6 +93,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   breakSE: {fileID: 8300000, guid: c1576efff35ceb74a908c2c047d7699d, type: 3}
   blockAnimation: {fileID: 2944333680396319823}
+  brickShardPfb: {fileID: 2727652405493353527, guid: e3060521cf6170e9ebc639c9cc0e941c, type: 3}
 --- !u!1 &8293376479221021967
 GameObject:
   m_ObjectHideFlags: 0

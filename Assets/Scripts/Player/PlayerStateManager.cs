@@ -35,45 +35,44 @@ public readonly struct PlayerPowerUpState
 }
 
 
-public class PlayerStateManager: MonoBehaviour
+public class PlayerStateManager : MonoBehaviour
 {
     const float InvincibleTime = 2.0f;
 
-    public PlayerPowerUpState CurrentPowerUpState { get; private set; } 
-        = new PlayerPowerUpState(false,false, PlayerGrowth.Small); // Å‰‚ÍƒXƒ^[‚Å‚Í‚È‚¢Smalló‘Ô‚©‚ç
+    public PlayerPowerUpState CurrentPowerUpState { get; private set; }
+        = new PlayerPowerUpState(false, false, PlayerGrowth.Small); // ï¿½Åï¿½ï¿½ÍƒXï¿½^ï¿½[ï¿½Å‚Í‚È‚ï¿½Smallï¿½ï¿½Ô‚ï¿½ï¿½ï¿½
     public event Action<PlayerPowerUpState> OnStateChanged = delegate { };
     public event Action OnInjured = delegate { };
 
-    // ƒvƒŒƒCƒ„[‚Ìƒpƒ[ƒAƒbƒv‚É‰‚¶‚½ƒRƒ“ƒ|[ƒlƒ“ƒg‚Ì‘Î‰
-    Dictionary<PlayerGrowth, MonoBehaviour[]> playerComponents = new();
+    // ï¿½vï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½[ï¿½Ìƒpï¿½ï¿½ï¿½[ï¿½Aï¿½bï¿½vï¿½É‰ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Rï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½gï¿½Ì‘Î‰ï¿½
+    [SerializeField] FirePower firePower;
+    Dictionary<PlayerGrowth, MonoBehaviour> playerComponent;
 
-    private void Awake()
+    void Awake()
     {
-        playerComponents[PlayerGrowth.Small] = new MonoBehaviour[] { };
-        playerComponents[PlayerGrowth.Large] = new MonoBehaviour[] { };
-        playerComponents[PlayerGrowth.Fire] =
-            new MonoBehaviour[] { 
-            // Fire‚Ì‹““®‚ğ’Ç‰Á
-            };
-    }
+        playerComponent = new(){
+        {PlayerGrowth.Fire, firePower}
+    };
 
-    void Start()
-    {
-        SetState(CurrentPowerUpState);
-    }
-
-    void DisableAll()
-    {
-        //
     }
 
     public void ChangeState(PlayerPowerUpState newState)
     {
-        DisableAll();
-        SetState(newState);
-        if(newState.Growth - CurrentPowerUpState.Growth < 0) OnInjured.Invoke();
+        if (playerComponent.TryGetValue(CurrentPowerUpState.Growth, out var oldPower))
+        {
+            oldPower.enabled = false;
+        }
+
+
+        if (newState.Growth - CurrentPowerUpState.Growth < 0) OnInjured.Invoke();
+
         CurrentPowerUpState = newState;
-        OnStateChanged.Invoke(newState);
+
+        if (playerComponent.TryGetValue(CurrentPowerUpState.Growth, out var newPower))
+        {
+            newPower.enabled = true;
+        }
+        OnStateChanged.Invoke(CurrentPowerUpState);
     }
 
     public void InjurePlayer()
@@ -90,7 +89,7 @@ public class PlayerStateManager: MonoBehaviour
                 ChangeState(CurrentPowerUpState.Copy(growth: PlayerGrowth.Small));
                 break;
             case PlayerGrowth.Fire:
-                // ‚±‚±‚Í‰‘ãƒ}ƒŠƒI‚Ìd—l‚É‡‚í‚¹‚é‚©‚¨D‚İ‚Å
+                // ï¿½ï¿½ï¿½ï¿½ï¿½Íï¿½ï¿½ï¿½}ï¿½ï¿½ï¿½Iï¿½Ìdï¿½lï¿½Éï¿½ï¿½í‚¹ï¿½é‚©ï¿½ï¿½ï¿½Dï¿½İ‚ï¿½
                 ChangeState(CurrentPowerUpState.Copy(growth: PlayerGrowth.Large));
                 break;
         }
@@ -101,23 +100,5 @@ public class PlayerStateManager: MonoBehaviour
         ChangeState(CurrentPowerUpState.Copy(isInvincible: true));
         yield return new WaitForSeconds(InvincibleTime);
         ChangeState(CurrentPowerUpState.Copy(isInvincible: false));
-    }
-
-    void SetState(PlayerPowerUpState newState)
-    {
-        // ƒRƒ“ƒ|[ƒlƒ“ƒg—LŒøó‘Ô‚ÌŠ„‚èU‚è
-        if (CurrentPowerUpState.IsStar)
-        {
-
-        }
-        else
-        {
-
-        }
-
-        foreach (var component in playerComponents[CurrentPowerUpState.Growth])
-        {
-            component.enabled = true;
-        }
     }
 }

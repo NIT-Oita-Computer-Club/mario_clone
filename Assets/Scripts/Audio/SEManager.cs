@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class SEManager: MonoBehaviour
+public class SEManager : MonoBehaviour
 {
     public AudioSource AudioSource { get; private set; }
 

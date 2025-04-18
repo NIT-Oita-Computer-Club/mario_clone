@@ -11,6 +11,7 @@ TagManager:
   - Stampable
   - Damage
   - Block
+  - Attack
   layers:
   - Default
   - TransparentFX

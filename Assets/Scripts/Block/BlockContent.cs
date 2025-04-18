@@ -1,4 +1,4 @@
-enum BlockContent
+public enum BlockContent
 {
     Mushroom,
     FireFlower,
